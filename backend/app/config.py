@@ -31,6 +31,11 @@ class Settings(BaseSettings):
         "http://127.0.0.1:5173",
     ]
 
+    # JWT ----------------------------------------------------------------------
+    JWT_SECRET_KEY: str = "change-me-in-production"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_EXPIRE_MINUTES: int = 43200  # 30 days
+
     # App metadata -------------------------------------------------------------
     APP_NAME: str = "Airbnb Games"
     DEBUG: bool = False

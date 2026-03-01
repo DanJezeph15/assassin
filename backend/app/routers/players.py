@@ -5,7 +5,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.dependencies import get_db
+from app.dependencies import get_db, get_optional_current_user
+from app.models.user import User
 from app.schemas.player import PlayerJoin, PlayerWithToken
 from app.services import game_service
 
@@ -22,12 +23,22 @@ async def join_game(
     code: str,
     body: PlayerJoin,
     db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[User | None, Depends(get_optional_current_user)] = None,
 ) -> PlayerWithToken:
     """Join a game by its code.
 
     The player receives a token that must be sent as the X-Player-Token
     header in subsequent requests. The first player to join becomes the
     game host.
+
+    If the caller is authenticated via JWT, the player record is
+    automatically linked to their user account.
     """
     player = await game_service.join_game(db, code, body.name)
+
+    if current_user is not None:
+        player.user_id = current_user.id
+        await db.commit()
+        await db.refresh(player)
+
     return PlayerWithToken.model_validate(player)

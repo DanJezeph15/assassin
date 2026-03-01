@@ -14,6 +14,7 @@ from app.database import Base
 if TYPE_CHECKING:
     from app.models.assignment import Assignment
     from app.models.game import Game
+    from app.models.user import User
 
 
 class Player(Base):
@@ -44,6 +45,10 @@ class Player(Base):
         String(64),
         nullable=False,
     )
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
     joined_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -51,6 +56,10 @@ class Player(Base):
     )
 
     # Relationships ------------------------------------------------------------
+    user: Mapped["User | None"] = relationship(
+        "User",
+        back_populates="players",
+    )
     game: Mapped["Game"] = relationship(
         "Game",
         back_populates="players",
@@ -75,6 +84,7 @@ class Player(Base):
     __table_args__ = (
         Index("ix_players_game_id", "game_id"),
         Index("ix_players_token", "token", unique=True),
+        Index("ix_players_user_id", "user_id"),
     )
 
     def __repr__(self) -> str:

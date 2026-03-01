@@ -765,3 +765,242 @@ async def test_remove_weapon_invalid_token(client: AsyncClient):
     )
 
     assert response.status_code == 401
+
+
+# ---------------------------------------------------------------------------
+# Helpers for ownership / permission tests
+# ---------------------------------------------------------------------------
+
+
+async def create_game_with_two_players(client: AsyncClient):
+    """Create a game, join as host (Alice) and member (Bob).
+
+    Returns (code, host_token, member_token).
+    """
+    code, host_token = await create_game_and_join(client, "Alice")
+
+    join_resp = await client.post(
+        f"/api/games/{code}/players",
+        json={"name": "Bob"},
+    )
+    member_token = join_resp.json()["token"]
+
+    return code, host_token, member_token
+
+
+# ---------------------------------------------------------------------------
+# Room deletion permission tests
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_host_can_remove_room_added_by_another_player(client: AsyncClient):
+    """The host can delete a room that a regular member added."""
+    code, host_token, member_token = await create_game_with_two_players(client)
+
+    # Member adds a room.
+    add_resp = await client.post(
+        f"/api/games/{code}/rooms",
+        json={"name": "Kitchen"},
+        headers={"X-Player-Token": member_token},
+    )
+    room_id = add_resp.json()["id"]
+
+    # Host deletes it.
+    response = await client.delete(
+        f"/api/games/{code}/rooms/{room_id}",
+        headers={"X-Player-Token": host_token},
+    )
+
+    assert response.status_code == 204
+
+
+@pytest.mark.asyncio
+async def test_member_can_remove_own_room(client: AsyncClient):
+    """A member can delete a room they added themselves."""
+    code, host_token, member_token = await create_game_with_two_players(client)
+
+    add_resp = await client.post(
+        f"/api/games/{code}/rooms",
+        json={"name": "Bedroom"},
+        headers={"X-Player-Token": member_token},
+    )
+    room_id = add_resp.json()["id"]
+
+    response = await client.delete(
+        f"/api/games/{code}/rooms/{room_id}",
+        headers={"X-Player-Token": member_token},
+    )
+
+    assert response.status_code == 204
+
+
+@pytest.mark.asyncio
+async def test_member_cannot_remove_room_added_by_another(client: AsyncClient):
+    """A non-host member cannot delete a room added by someone else."""
+    code, host_token, member_token = await create_game_with_two_players(client)
+
+    # Host adds a room.
+    add_resp = await client.post(
+        f"/api/games/{code}/rooms",
+        json={"name": "Lounge"},
+        headers={"X-Player-Token": host_token},
+    )
+    room_id = add_resp.json()["id"]
+
+    # Member tries to delete it.
+    response = await client.delete(
+        f"/api/games/{code}/rooms/{room_id}",
+        headers={"X-Player-Token": member_token},
+    )
+
+    assert response.status_code == 403
+    assert "only remove items you added" in response.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_member_cannot_remove_room_added_by_host(client: AsyncClient):
+    """A non-host member cannot delete a room added by the host."""
+    code, host_token, member_token = await create_game_with_two_players(client)
+
+    add_resp = await client.post(
+        f"/api/games/{code}/rooms",
+        json={"name": "Bathroom"},
+        headers={"X-Player-Token": host_token},
+    )
+    room_id = add_resp.json()["id"]
+
+    response = await client.delete(
+        f"/api/games/{code}/rooms/{room_id}",
+        headers={"X-Player-Token": member_token},
+    )
+
+    assert response.status_code == 403
+
+
+# ---------------------------------------------------------------------------
+# Weapon deletion permission tests
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_host_can_remove_weapon_added_by_another_player(client: AsyncClient):
+    """The host can delete a weapon that a regular member added."""
+    code, host_token, member_token = await create_game_with_two_players(client)
+
+    add_resp = await client.post(
+        f"/api/games/{code}/weapons",
+        json={"name": "Pan"},
+        headers={"X-Player-Token": member_token},
+    )
+    weapon_id = add_resp.json()["id"]
+
+    response = await client.delete(
+        f"/api/games/{code}/weapons/{weapon_id}",
+        headers={"X-Player-Token": host_token},
+    )
+
+    assert response.status_code == 204
+
+
+@pytest.mark.asyncio
+async def test_member_can_remove_own_weapon(client: AsyncClient):
+    """A member can delete a weapon they added themselves."""
+    code, host_token, member_token = await create_game_with_two_players(client)
+
+    add_resp = await client.post(
+        f"/api/games/{code}/weapons",
+        json={"name": "Pillow"},
+        headers={"X-Player-Token": member_token},
+    )
+    weapon_id = add_resp.json()["id"]
+
+    response = await client.delete(
+        f"/api/games/{code}/weapons/{weapon_id}",
+        headers={"X-Player-Token": member_token},
+    )
+
+    assert response.status_code == 204
+
+
+@pytest.mark.asyncio
+async def test_member_cannot_remove_weapon_added_by_another(client: AsyncClient):
+    """A non-host member cannot delete a weapon added by someone else."""
+    code, host_token, member_token = await create_game_with_two_players(client)
+
+    add_resp = await client.post(
+        f"/api/games/{code}/weapons",
+        json={"name": "Remote"},
+        headers={"X-Player-Token": host_token},
+    )
+    weapon_id = add_resp.json()["id"]
+
+    response = await client.delete(
+        f"/api/games/{code}/weapons/{weapon_id}",
+        headers={"X-Player-Token": member_token},
+    )
+
+    assert response.status_code == 403
+    assert "only remove items you added" in response.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_member_cannot_remove_weapon_added_by_host(client: AsyncClient):
+    """A non-host member cannot delete a weapon added by the host."""
+    code, host_token, member_token = await create_game_with_two_players(client)
+
+    add_resp = await client.post(
+        f"/api/games/{code}/weapons",
+        json={"name": "Mug"},
+        headers={"X-Player-Token": host_token},
+    )
+    weapon_id = add_resp.json()["id"]
+
+    response = await client.delete(
+        f"/api/games/{code}/weapons/{weapon_id}",
+        headers={"X-Player-Token": member_token},
+    )
+
+    assert response.status_code == 403
+
+
+# ---------------------------------------------------------------------------
+# Response schema tests -- created_by is returned
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_add_room_returns_created_by(client: AsyncClient):
+    """POST /api/games/{code}/rooms includes created_by in the response."""
+    code, token = await create_game_and_join(client)
+
+    # Get player id from game detail.
+    game_resp = await client.get(f"/api/games/{code}")
+    player_id = game_resp.json()["players"][0]["id"]
+
+    response = await client.post(
+        f"/api/games/{code}/rooms",
+        json={"name": "Kitchen"},
+        headers={"X-Player-Token": token},
+    )
+
+    assert response.status_code == 201
+    assert response.json()["created_by"] == player_id
+
+
+@pytest.mark.asyncio
+async def test_add_weapon_returns_created_by(client: AsyncClient):
+    """POST /api/games/{code}/weapons includes created_by in the response."""
+    code, token = await create_game_and_join(client)
+
+    game_resp = await client.get(f"/api/games/{code}")
+    player_id = game_resp.json()["players"][0]["id"]
+
+    response = await client.post(
+        f"/api/games/{code}/weapons",
+        json={"name": "Spatula"},
+        headers={"X-Player-Token": token},
+    )
+
+    assert response.status_code == 201
+    assert response.json()["created_by"] == player_id

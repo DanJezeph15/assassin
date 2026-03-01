@@ -8,6 +8,7 @@ from app.models.assignment import Assignment
 from app.models.game import Game, GameStatus
 from app.models.player import Player
 from app.models.room import Room
+from app.models.user import User
 from app.models.weapon import Weapon
 
 __all__ = [
@@ -16,5 +17,6 @@ __all__ = [
     "GameStatus",
     "Player",
     "Room",
+    "User",
     "Weapon",
 ]

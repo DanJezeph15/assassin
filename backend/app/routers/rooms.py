@@ -42,7 +42,7 @@ async def add_room(
                 detail=f"Room '{body.name}' already exists in this game",
             )
 
-    room = Room(game_id=game.id, name=body.name)
+    room = Room(game_id=game.id, name=body.name, created_by=current_player.id)
     db.add(room)
     await db.commit()
     await db.refresh(room)
@@ -79,6 +79,13 @@ async def remove_room(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Room not found in this game",
+        )
+
+    # Host can remove any item; others can only remove their own.
+    if current_player.id != game.host_id and target_room.created_by != current_player.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only remove items you added",
         )
 
     await db.delete(target_room)

@@ -69,3 +69,35 @@ export function removeGameSession(code: string): void {
   localStorage.removeItem(`${TOKEN_KEY_PREFIX}${code}`);
   localStorage.removeItem(`${PLAYER_INFO_KEY_PREFIX}${code}`);
 }
+
+// Auth storage helpers
+
+const AUTH_TOKEN_KEY = "assassin_auth_token";
+const AUTH_USER_KEY = "assassin_auth_user";
+
+export function saveAuthToken(token: string): void {
+  localStorage.setItem(AUTH_TOKEN_KEY, token);
+}
+
+export function getAuthToken(): string | null {
+  return localStorage.getItem(AUTH_TOKEN_KEY);
+}
+
+export function clearAuth(): void {
+  localStorage.removeItem(AUTH_TOKEN_KEY);
+  localStorage.removeItem(AUTH_USER_KEY);
+}
+
+export function saveAuthUser(user: { id: string; username: string }): void {
+  localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+}
+
+export function getAuthUser(): { id: string; username: string } | null {
+  const raw = localStorage.getItem(AUTH_USER_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as { id: string; username: string };
+  } catch {
+    return null;
+  }
+}

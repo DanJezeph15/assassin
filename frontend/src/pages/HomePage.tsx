@@ -7,10 +7,12 @@ import Input from "../components/ui/Input";
 import { ApiError } from "../api/client";
 import { createGame, joinGame } from "../api/endpoints";
 import { savePlayerInfo, savePlayerToken } from "../utils/storage";
+import { useAuth } from "../context/AuthContext";
 import ActiveGamesList from "../components/ActiveGamesList";
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const { authToken, openAuthModal } = useAuth();
 
   // Create game state
   const [isCreating, setIsCreating] = useState(false);
@@ -25,6 +27,10 @@ export default function HomePage() {
   const [nameError, setNameError] = useState("");
 
   async function handleCreateGame() {
+    if (!authToken) {
+      openAuthModal();
+      return;
+    }
     setCreateError("");
     setIsCreating(true);
     try {
@@ -43,6 +49,11 @@ export default function HomePage() {
 
   async function handleJoinGame(e: FormEvent) {
     e.preventDefault();
+
+    if (!authToken) {
+      openAuthModal();
+      return;
+    }
 
     // Client-side validation
     setCodeError("");
@@ -73,7 +84,7 @@ export default function HomePage() {
 
     setIsJoining(true);
     try {
-      const result = await joinGame(trimmedCode, trimmedName);
+      const result = await joinGame(trimmedCode, trimmedName, authToken);
       savePlayerToken(trimmedCode, result.token);
       savePlayerInfo(trimmedCode, {
         id: result.id,

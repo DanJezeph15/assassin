@@ -1,9 +1,18 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import type { Game, GameStatus } from "../types/game";
 import { getGame } from "../api/endpoints";
+import { getUserGames, restoreSession } from "../api/auth";
 import { ApiError } from "../api/client";
-import { getAllGameSessions, removeGameSession } from "../utils/storage";
+import {
+  getAllGameSessions,
+  getPlayerToken,
+  removeGameSession,
+  savePlayerInfo,
+  savePlayerToken,
+} from "../utils/storage";
+import { useAuth } from "../context/AuthContext";
+import { statusConfig } from "../utils/gameStatus";
 import Card from "./ui/Card";
 
 interface ResolvedGame {
@@ -13,48 +22,36 @@ interface ResolvedGame {
   created_at: string;
 }
 
-const statusConfig: Record<GameStatus, { label: string; classes: string }> = {
-  lobby: {
-    label: "Lobby",
-    classes:
-      "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
-  },
-  in_progress: {
-    label: "In Progress",
-    classes:
-      "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-  },
-  finished: {
-    label: "Finished",
-    classes:
-      "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
-  },
-};
-
 export default function ActiveGamesList() {
   const navigate = useNavigate();
+  const { authToken, user } = useAuth();
   const [games, setGames] = useState<ResolvedGame[]>([]);
-  const [loading, setLoading] = useState(() => getAllGameSessions().length > 0);
+  const [loading, setLoading] = useState(
+    () => getAllGameSessions().length > 0 || !!authToken,
+  );
 
   useEffect(() => {
-    const sessions = getAllGameSessions();
-    if (sessions.length === 0) return;
-
     let cancelled = false;
 
     async function resolve() {
       const results: ResolvedGame[] = [];
+      const seenCodes = new Set<string>();
 
+      // 1. Resolve localStorage sessions (existing behavior)
+      const sessions = getAllGameSessions();
       await Promise.all(
         sessions.map(async (session) => {
           try {
             const game: Game = await getGame(session.code);
-            results.push({
-              code: game.code,
-              playerName: session.playerInfo?.name ?? "Unknown",
-              status: game.status,
-              created_at: game.created_at,
-            });
+            if (!cancelled) {
+              seenCodes.add(game.code);
+              results.push({
+                code: game.code,
+                playerName: session.playerInfo?.name ?? "Unknown",
+                status: game.status,
+                created_at: game.created_at,
+              });
+            }
           } catch (err) {
             if (err instanceof ApiError && err.status === 404) {
               removeGameSession(session.code);
@@ -63,22 +60,74 @@ export default function ActiveGamesList() {
         }),
       );
 
+      // 2. If logged in, also fetch server-side games and merge
+      if (authToken) {
+        try {
+          const response = await getUserGames(authToken);
+          if (!cancelled) {
+            // For each server game not in localStorage, restore the session
+            await Promise.all(
+              response.items.map(async (sg) => {
+                // Only process games we don't already have locally
+                if (seenCodes.has(sg.game_code)) return;
+
+                // Restore session to get player token into localStorage
+                const existingToken = getPlayerToken(sg.game_code);
+                if (!existingToken) {
+                  try {
+                    const restored = await restoreSession(
+                      authToken,
+                      sg.game_code,
+                    );
+                    if (!cancelled) {
+                      savePlayerToken(sg.game_code, restored.token);
+                      savePlayerInfo(sg.game_code, {
+                        id: restored.player_id,
+                        name: restored.player_name,
+                      });
+                    }
+                  } catch {
+                    // Restore failed (game may be deleted) -- skip this game
+                    return;
+                  }
+                }
+
+                seenCodes.add(sg.game_code);
+                results.push({
+                  code: sg.game_code,
+                  playerName: sg.player_name,
+                  status: sg.game_status as GameStatus,
+                  created_at: sg.created_at,
+                });
+              }),
+            );
+          }
+        } catch {
+          // Server games fetch failed -- still show localStorage games
+        }
+      }
+
       if (!cancelled) {
         results.sort(
           (a, b) =>
-            new Date(b.created_at).getTime() -
-            new Date(a.created_at).getTime(),
+            new Date(b.created_at || 0).getTime() -
+            new Date(a.created_at || 0).getTime(),
         );
         setGames(results);
         setLoading(false);
       }
     }
 
+    const sessions = getAllGameSessions();
+    if (sessions.length === 0 && !authToken) {
+      return;
+    }
+
     resolve();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [authToken, user]);
 
   if (loading) {
     return (
@@ -149,6 +198,16 @@ export default function ActiveGamesList() {
           );
         })}
       </ul>
+      {authToken && (
+        <div className="mt-3 text-center">
+          <Link
+            to="/my-games"
+            className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+          >
+            View all games
+          </Link>
+        </div>
+      )}
     </Card>
   );
 }
