@@ -38,3 +38,13 @@ Then open http://localhost:5173 and share the join code with your friends.
 ## Technical Details
 
 See [CLAUDE.md](CLAUDE.md) for the tech stack, project structure, and detailed game logic.
+
+
+### Screenshots:
+<img width="335" height="749" alt="Screenshot 2026-03-01 at 19 20 50" src="https://github.com/user-attachments/assets/628b2d12-b0a9-4e71-82de-c9a32747a333" />
+
+<img width="391" height="412" alt="Screenshot 2026-03-01 at 19 22 05" src="https://github.com/user-attachments/assets/a25a718f-6e73-46f0-80ab-0adfcc467116" />
+
+<img width="314" height="671" alt="Screenshot 2026-03-01 at 19 22 36" src="https://github.com/user-attachments/assets/99cbd7a1-2138-4084-ab6b-72d99e2e395d" />
+
+<img width="324" height="531" alt="Screenshot 2026-03-01 at 19 23 09" src="https://github.com/user-attachments/assets/014a3210-62c4-4dc1-8ae8-8435b9fa764f" />
