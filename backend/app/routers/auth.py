@@ -1,9 +1,10 @@
 """Auth router -- user registration, login, and account management."""
 
+import math
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -16,6 +17,7 @@ from app.schemas.auth import (
     LinkSessionsRequest,
     LinkSessionsResponse,
     LoginRequest,
+    PaginatedUserGames,
     RegisterRequest,
     SessionRestoreResponse,
     UserGameInfo,
@@ -80,29 +82,53 @@ async def get_me(
 
 @router.get(
     "/me/games",
-    response_model=list[UserGameInfo],
+    response_model=PaginatedUserGames,
     summary="List games for current user",
 )
 async def get_my_games(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
-) -> list[UserGameInfo]:
-    """Return all games the authenticated user has participated in."""
+    page: int = Query(default=1, ge=1),
+    per_page: int = Query(default=25, ge=1, le=100),
+) -> PaginatedUserGames:
+    """Return paginated games the authenticated user has participated in."""
+    # Count total
+    count_result = await db.execute(
+        select(func.count()).select_from(Player).where(Player.user_id == current_user.id)
+    )
+    total = count_result.scalar_one()
+
+    # Fetch paginated, ordered by game created_at desc
     result = await db.execute(
-        select(Player).where(Player.user_id == current_user.id).options(selectinload(Player.game))
+        select(Player)
+        .join(Game, Player.game_id == Game.id)
+        .where(Player.user_id == current_user.id)
+        .options(selectinload(Player.game))
+        .order_by(Game.created_at.desc())
+        .offset((page - 1) * per_page)
+        .limit(per_page)
     )
     players = result.scalars().all()
 
-    return [
+    items = [
         UserGameInfo(
             game_id=player.game.id,
             game_code=player.game.code,
             game_status=player.game.status.value,
             player_name=player.name,
             player_id=player.id,
+            created_at=player.game.created_at,
         )
         for player in players
     ]
+
+    return PaginatedUserGames(
+        items=items,
+        total=total,
+        page=page,
+        per_page=per_page,
+        pages=max(1, math.ceil(total / per_page)),
+    )
 
 
 @router.post(

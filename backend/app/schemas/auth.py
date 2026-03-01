@@ -53,6 +53,17 @@ class UserGameInfo(BaseModel):
     game_status: str
     player_name: str
     player_id: uuid.UUID
+    created_at: datetime
+
+
+class PaginatedUserGames(BaseModel):
+    """Paginated list of user games."""
+
+    items: list[UserGameInfo]
+    total: int
+    page: int
+    per_page: int
+    pages: int
 
 
 class SessionRestoreResponse(BaseModel):

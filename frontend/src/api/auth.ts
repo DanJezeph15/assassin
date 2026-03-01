@@ -3,9 +3,9 @@
 import type {
   AuthResponse,
   LinkSessionsResponse,
+  PaginatedUserGames,
   SessionRestoreResponse,
   User,
-  UserGameInfo,
 } from "../types/auth";
 import { apiClient } from "./client";
 
@@ -35,8 +35,13 @@ export async function getProfile(authToken: string): Promise<User> {
 
 export async function getUserGames(
   authToken: string,
-): Promise<UserGameInfo[]> {
-  return apiClient<UserGameInfo[]>("/auth/me/games", { authToken });
+  page: number = 1,
+  perPage: number = 25,
+): Promise<PaginatedUserGames> {
+  return apiClient<PaginatedUserGames>(
+    `/auth/me/games?page=${page}&per_page=${perPage}`,
+    { authToken },
+  );
 }
 
 export async function restoreSession(

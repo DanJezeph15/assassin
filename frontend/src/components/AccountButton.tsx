@@ -1,10 +1,12 @@
 // Account button: sign-in trigger when logged out, avatar+dropdown when logged in
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function AccountButton() {
   const { user, isLoading, logout, openAuthModal } = useAuth();
+  const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -88,6 +90,16 @@ export default function AccountButton() {
               {user.username}
             </p>
           </div>
+          <button
+            type="button"
+            onClick={() => {
+              setDropdownOpen(false);
+              navigate("/my-games");
+            }}
+            className="w-full px-4 py-2.5 text-left text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/60 hover:text-gray-900 dark:hover:text-gray-200 transition-colors duration-150"
+          >
+            My Games
+          </button>
           <button
             type="button"
             onClick={handleLogout}

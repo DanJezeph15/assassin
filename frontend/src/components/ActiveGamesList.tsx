@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import type { Game, GameStatus } from "../types/game";
 import { getGame } from "../api/endpoints";
 import { getUserGames, restoreSession } from "../api/auth";
@@ -12,6 +12,7 @@ import {
   savePlayerToken,
 } from "../utils/storage";
 import { useAuth } from "../context/AuthContext";
+import { statusConfig } from "../utils/gameStatus";
 import Card from "./ui/Card";
 
 interface ResolvedGame {
@@ -20,24 +21,6 @@ interface ResolvedGame {
   status: GameStatus;
   created_at: string;
 }
-
-const statusConfig: Record<GameStatus, { label: string; classes: string }> = {
-  lobby: {
-    label: "Lobby",
-    classes:
-      "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
-  },
-  in_progress: {
-    label: "In Progress",
-    classes:
-      "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-  },
-  finished: {
-    label: "Finished",
-    classes:
-      "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
-  },
-};
 
 export default function ActiveGamesList() {
   const navigate = useNavigate();
@@ -80,11 +63,11 @@ export default function ActiveGamesList() {
       // 2. If logged in, also fetch server-side games and merge
       if (authToken) {
         try {
-          const serverGames = await getUserGames(authToken);
+          const response = await getUserGames(authToken);
           if (!cancelled) {
             // For each server game not in localStorage, restore the session
             await Promise.all(
-              serverGames.map(async (sg) => {
+              response.items.map(async (sg) => {
                 // Only process games we don't already have locally
                 if (seenCodes.has(sg.game_code)) return;
 
@@ -114,7 +97,7 @@ export default function ActiveGamesList() {
                   code: sg.game_code,
                   playerName: sg.player_name,
                   status: sg.game_status as GameStatus,
-                  created_at: "", // Server games don't have created_at, sort last
+                  created_at: sg.created_at,
                 });
               }),
             );
@@ -215,6 +198,16 @@ export default function ActiveGamesList() {
           );
         })}
       </ul>
+      {authToken && (
+        <div className="mt-3 text-center">
+          <Link
+            to="/my-games"
+            className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+          >
+            View all games
+          </Link>
+        </div>
+      )}
     </Card>
   );
 }

@@ -256,7 +256,7 @@ async def test_get_profile_invalid_token(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_games_empty_for_new_user(client: AsyncClient):
-    """GET /api/auth/me/games returns an empty list for a new user."""
+    """GET /api/auth/me/games returns paginated shape with empty items for a new user."""
     auth_token, _ = await register_user(client)
 
     resp = await client.get(
@@ -265,7 +265,12 @@ async def test_games_empty_for_new_user(client: AsyncClient):
     )
 
     assert resp.status_code == 200
-    assert resp.json() == []
+    data = resp.json()
+    assert data["items"] == []
+    assert data["total"] == 0
+    assert data["page"] == 1
+    assert data["per_page"] == 25
+    assert data["pages"] == 1
 
 
 @pytest.mark.asyncio
@@ -284,10 +289,124 @@ async def test_games_shows_linked_game(client: AsyncClient):
     )
 
     assert resp.status_code == 200
-    games = resp.json()
+    games = resp.json()["items"]
     assert len(games) == 1
     assert games[0]["game_code"] == code
     assert games[0]["player_name"] == "TestPlayer"
+
+
+@pytest.mark.asyncio
+async def test_games_pagination_defaults(client: AsyncClient):
+    """Creating 3 games returns them in default page=1/per_page=25 shape."""
+    auth_token, _ = await register_user(client)
+    for i in range(3):
+        await create_game_and_join(client, player_name=f"P{i}", auth_token=auth_token)
+
+    resp = await client.get(
+        "/api/auth/me/games",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+
+    data = resp.json()
+    assert data["total"] == 3
+    assert data["page"] == 1
+    assert data["per_page"] == 25
+    assert data["pages"] == 1
+    assert len(data["items"]) == 3
+
+
+@pytest.mark.asyncio
+async def test_games_pagination_second_page(client: AsyncClient):
+    """Creating 30 games then requesting page 2 returns 5 items."""
+    auth_token, _ = await register_user(client)
+    for i in range(30):
+        await create_game_and_join(client, player_name=f"P{i}", auth_token=auth_token)
+
+    resp = await client.get(
+        "/api/auth/me/games?page=2&per_page=25",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+
+    data = resp.json()
+    assert data["total"] == 30
+    assert data["page"] == 2
+    assert data["per_page"] == 25
+    assert data["pages"] == 2
+    assert len(data["items"]) == 5
+
+
+@pytest.mark.asyncio
+async def test_games_pagination_custom_per_page(client: AsyncClient):
+    """Custom per_page=2 with 5 games gives 3 pages."""
+    auth_token, _ = await register_user(client)
+    for i in range(5):
+        await create_game_and_join(client, player_name=f"P{i}", auth_token=auth_token)
+
+    resp = await client.get(
+        "/api/auth/me/games?per_page=2",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+
+    data = resp.json()
+    assert data["total"] == 5
+    assert data["per_page"] == 2
+    assert data["pages"] == 3
+    assert len(data["items"]) == 2
+
+
+@pytest.mark.asyncio
+async def test_games_pagination_beyond_last_page(client: AsyncClient):
+    """Requesting a page beyond the last returns empty items but correct total."""
+    auth_token, _ = await register_user(client)
+    for i in range(3):
+        await create_game_and_join(client, player_name=f"P{i}", auth_token=auth_token)
+
+    resp = await client.get(
+        "/api/auth/me/games?page=99",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+
+    data = resp.json()
+    assert data["total"] == 3
+    assert data["page"] == 99
+    assert data["items"] == []
+
+
+@pytest.mark.asyncio
+async def test_games_ordered_by_created_at_desc(client: AsyncClient):
+    """Games are returned with created_at in non-ascending order."""
+    auth_token, _ = await register_user(client)
+    for i in range(3):
+        await create_game_and_join(client, player_name=f"P{i}", auth_token=auth_token)
+
+    resp = await client.get(
+        "/api/auth/me/games",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+
+    items = resp.json()["items"]
+    assert len(items) == 3
+    # Verify created_at values are in non-ascending order
+    timestamps = [item["created_at"] for item in items]
+    for i in range(len(timestamps) - 1):
+        assert timestamps[i] >= timestamps[i + 1]
+
+
+@pytest.mark.asyncio
+async def test_games_includes_created_at(client: AsyncClient):
+    """Each game item includes a created_at field."""
+    auth_token, _ = await register_user(client)
+    await create_game_and_join(client, player_name="Alice", auth_token=auth_token)
+
+    resp = await client.get(
+        "/api/auth/me/games",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+
+    items = resp.json()["items"]
+    assert len(items) == 1
+    assert "created_at" in items[0]
+    assert items[0]["created_at"] is not None
 
 
 # ---------------------------------------------------------------------------
@@ -365,7 +484,7 @@ async def test_link_sessions_success(client: AsyncClient):
         "/api/auth/me/games",
         headers={"Authorization": f"Bearer {auth_token}"},
     )
-    games = games_resp.json()
+    games = games_resp.json()["items"]
     assert len(games) == 1
     assert games[0]["game_code"] == code
     assert games[0]["player_name"] == "AnonPlayer"

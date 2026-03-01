@@ -17,6 +17,15 @@ export interface UserGameInfo {
   game_status: string;
   player_name: string;
   player_id: string;
+  created_at: string;
+}
+
+export interface PaginatedUserGames {
+  items: UserGameInfo[];
+  total: number;
+  page: number;
+  per_page: number;
+  pages: number;
 }
 
 export interface SessionRestoreResponse {
