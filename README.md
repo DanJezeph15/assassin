@@ -1,58 +1,40 @@
-# Airbnb Games
+# Assassin
 
-Party games website for playing with friends at Airbnb stays. See [CLAUDE.md](CLAUDE.md) for game rules and details.
+A real-life elimination game for groups staying at an Airbnb. Think Cluedo but you're actually doing it — each player is secretly assigned a target to "kill" using a specific weapon in a specific room of the house.
 
-## Tech Stack
+## How It Works
 
-- **Backend:** FastAPI, SQLAlchemy 2 (async), SQLite, Alembic, Uvicorn
-- **Frontend:** React 19, TypeScript, React Router v7, Tailwind CSS, Vite 7
+1. **One person creates a game** and shares the join code with everyone.
+2. **Players join** the lobby and enter their name.
+3. **Everyone adds rooms and weapons** — real rooms in your Airbnb (Kitchen, Master Bedroom, etc.) and real objects as weapons (Mug, Spatula, TV Remote, etc.).
+4. **The host starts the game** and everyone gets a secret assignment: **"Kill [Target] in the [Room] with the [Weapon]"**.
 
-## Prerequisites
+## Playing the Game
 
-- Python 3.12+
-- Node.js 18+
-- npm
+- Your assignment is private — only you can see it.
+- To make a kill, get your target alone in the assigned room with the assigned weapon. Creativity and stealth encouraged.
+- When you're killed, you confirm it by pressing **"I've been killed"** in the app.
+- The killer then inherits the victim's assignment and continues the hunt.
+- Last person standing wins.
 
-## First Time Setup
+## Leaderboard
 
-### Backend
+Kills are tracked per player throughout the game, so even if you're eliminated you can see who's dominating.
 
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-alembic upgrade head
-```
+## Running It
 
-### Frontend
+You'll need Python 3.12+ and Node.js 18+.
 
 ```bash
-cd frontend
-npm install
+# Install everything
+make setup
+
+# Start the app
+make dev
 ```
 
-## Running the App
+Then open http://localhost:5173 and share the join code with your friends.
 
-Start both servers in separate terminals:
+## Technical Details
 
-### Backend (port 8000)
-
-```bash
-cd backend
-source venv/bin/activate
-uvicorn app.main:app --reload --port 8000
-```
-
-API docs available at http://localhost:8000/docs
-
-### Frontend (port 5173)
-
-```bash
-cd frontend
-npm run dev
-```
-
-Open http://localhost:5173 in your browser.
-
-The frontend proxies `/api` requests to the backend automatically.
+See [CLAUDE.md](CLAUDE.md) for the tech stack, project structure, and detailed game logic.
