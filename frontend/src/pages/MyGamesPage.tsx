@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import type { PaginatedUserGames } from "../types/auth";
 import type { GameStatus } from "../types/game";
 import { getUserGames, restoreSession } from "../api/auth";
@@ -85,17 +85,36 @@ export default function MyGamesPage() {
     <main className="flex min-h-dvh flex-col items-center bg-gradient-to-br from-gray-100 via-gray-100 to-gray-200 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 px-4 py-8">
       <div className="w-full max-w-lg space-y-6">
         {/* Header */}
-        <header className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => navigate("/")}
-            className="inline-flex items-center justify-center w-9 h-9 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-white/60 dark:hover:bg-gray-800/60 transition-colors"
-            aria-label="Back to home"
+        <header className="space-y-4">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 group"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-              <path fillRule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
-            </svg>
-          </button>
+            <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-red-700 to-red-900 shadow-md shadow-red-200/80 dark:shadow-red-900/30">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-4 h-4 text-white"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <circle cx="12" cy="12" r="6" />
+                <circle cx="12" cy="12" r="2" />
+                <line x1="12" y1="2" x2="12" y2="6" />
+                <line x1="12" y1="18" x2="12" y2="22" />
+                <line x1="2" y1="12" x2="6" y2="12" />
+                <line x1="18" y1="12" x2="22" y2="12" />
+              </svg>
+            </div>
+            <span className="text-lg font-bold italic tracking-tight text-gray-900 dark:text-white group-hover:text-red-700 dark:group-hover:text-red-400 transition-colors">
+              Assassin
+            </span>
+          </Link>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
             My Games
           </h1>
