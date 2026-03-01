@@ -5,6 +5,7 @@ PIP := $(VENV)/bin/pip
 PYTHON := $(VENV)/bin/python
 UVICORN := $(VENV)/bin/uvicorn
 ALEMBIC := cd backend && ../$(VENV)/bin/alembic
+TY := cd backend && ../$(VENV)/bin/ty
 
 # Default target
 help: ## Show this help message
@@ -42,13 +43,15 @@ dev-frontend: ## Start frontend dev server (port 5173)
 test: ## Run backend tests
 	cd backend && ../$(PYTHON) -m pytest -v
 
-format: ## Auto-format backend code
+format: ## Auto-format and type-check backend code
 	$(VENV)/bin/ruff check --fix backend/
 	$(VENV)/bin/ruff format backend/
+	$(TY) check
 
 lint: ## Check backend and frontend linting
 	$(VENV)/bin/ruff check backend/
 	$(VENV)/bin/ruff format --check backend/
+	$(TY) check
 	cd frontend && npm run lint
 
 # ─── Build ────────────────────────────────────────────────────────────────────

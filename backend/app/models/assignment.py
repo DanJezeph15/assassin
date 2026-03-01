@@ -5,13 +5,22 @@ in a specific room with a specific weapon.  Each player has at most one
 active assignment at a time.
 """
 
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, ForeignKey, Index, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
+
+if TYPE_CHECKING:
+    from app.models.game import Game
+    from app.models.player import Player
+    from app.models.room import Room
+    from app.models.weapon import Weapon
 
 
 class Assignment(Base):
@@ -52,25 +61,25 @@ class Assignment(Base):
     )
 
     # Relationships ------------------------------------------------------------
-    game: Mapped["Game"] = relationship(  # noqa: F821
+    game: Mapped["Game"] = relationship(
         "Game",
         back_populates="assignments",
     )
-    killer: Mapped["Player"] = relationship(  # noqa: F821
+    killer: Mapped["Player"] = relationship(
         "Player",
         back_populates="assignments_as_killer",
         foreign_keys=[killer_id],
     )
-    target: Mapped["Player"] = relationship(  # noqa: F821
+    target: Mapped["Player"] = relationship(
         "Player",
         back_populates="assignments_as_target",
         foreign_keys=[target_id],
     )
-    room: Mapped["Room"] = relationship(  # noqa: F821
+    room: Mapped["Room"] = relationship(
         "Room",
         back_populates="assignments",
     )
-    weapon: Mapped["Weapon"] = relationship(  # noqa: F821
+    weapon: Mapped["Weapon"] = relationship(
         "Weapon",
         back_populates="assignments",
     )

@@ -1,12 +1,19 @@
 """Player ORM model."""
 
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
+
+if TYPE_CHECKING:
+    from app.models.assignment import Assignment
+    from app.models.game import Game
 
 
 class Player(Base):
@@ -44,21 +51,21 @@ class Player(Base):
     )
 
     # Relationships ------------------------------------------------------------
-    game: Mapped["Game"] = relationship(  # noqa: F821
+    game: Mapped["Game"] = relationship(
         "Game",
         back_populates="players",
         foreign_keys=[game_id],
     )
 
     # Assignments where this player is the killer.
-    assignments_as_killer: Mapped[list["Assignment"]] = relationship(  # noqa: F821
+    assignments_as_killer: Mapped[list["Assignment"]] = relationship(
         "Assignment",
         back_populates="killer",
         foreign_keys="Assignment.killer_id",
     )
 
     # Assignments where this player is the target.
-    assignments_as_target: Mapped[list["Assignment"]] = relationship(  # noqa: F821
+    assignments_as_target: Mapped[list["Assignment"]] = relationship(
         "Assignment",
         back_populates="target",
         foreign_keys="Assignment.target_id",
