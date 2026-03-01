@@ -17,11 +17,13 @@ import {
   savePlayerInfo,
   savePlayerToken,
 } from "../utils/storage";
+import { useAuth } from "../context/AuthContext";
 import usePolling from "../hooks/usePolling";
 
 export default function LobbyPage() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
+  const { authToken, openAuthModal } = useAuth();
   const gameCode = code?.toUpperCase() ?? "";
 
   // Player identity from localStorage
@@ -89,6 +91,12 @@ export default function LobbyPage() {
   // Join game handler
   async function handleJoin(e: FormEvent) {
     e.preventDefault();
+
+    if (!authToken) {
+      openAuthModal();
+      return;
+    }
+
     setJoinNameError("");
     setJoinError("");
 
@@ -104,7 +112,7 @@ export default function LobbyPage() {
 
     setIsJoining(true);
     try {
-      const result = await joinGame(gameCode, trimmedName);
+      const result = await joinGame(gameCode, trimmedName, authToken);
       savePlayerToken(gameCode, result.token);
       savePlayerInfo(gameCode, { id: result.id, name: result.name });
       setToken(result.token);

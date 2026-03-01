@@ -22,10 +22,12 @@ export async function createGame(): Promise<CreateGameResponse> {
 export async function joinGame(
   code: string,
   name: string,
+  authToken?: string | null,
 ): Promise<JoinGameResponse> {
   return apiClient<JoinGameResponse>(`/games/${code}/players`, {
     method: "POST",
     body: { name },
+    authToken,
   });
 }
 

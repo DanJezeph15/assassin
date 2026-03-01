@@ -13,6 +13,7 @@ from app.database import Base
 if TYPE_CHECKING:
     from app.models.assignment import Assignment
     from app.models.game import Game
+    from app.models.player import Player
 
 
 class Room(Base):
@@ -30,8 +31,16 @@ class Room(Base):
         String(100),
         nullable=False,
     )
+    created_by: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("players.id"),
+        nullable=True,
+    )
 
     # Relationships ------------------------------------------------------------
+    creator: Mapped["Player | None"] = relationship(
+        "Player",
+        foreign_keys=[created_by],
+    )
     game: Mapped["Game"] = relationship(
         "Game",
         back_populates="rooms",

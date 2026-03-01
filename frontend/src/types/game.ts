@@ -12,11 +12,13 @@ export interface Player {
 export interface Room {
   id: string;
   name: string;
+  created_by: string | null;
 }
 
 export interface Weapon {
   id: string;
   name: string;
+  created_by: string | null;
 }
 
 export interface Game {

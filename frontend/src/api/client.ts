@@ -18,13 +18,14 @@ interface RequestOptions {
   method?: string;
   body?: unknown;
   token?: string | null;
+  authToken?: string | null;
 }
 
 export async function apiClient<T>(
   path: string,
   options: RequestOptions = {},
 ): Promise<T> {
-  const { method = "GET", body, token } = options;
+  const { method = "GET", body, token, authToken } = options;
 
   const headers: Record<string, string> = {};
 
@@ -34,6 +35,10 @@ export async function apiClient<T>(
 
   if (token) {
     headers["X-Player-Token"] = token;
+  }
+
+  if (authToken) {
+    headers["Authorization"] = `Bearer ${authToken}`;
   }
 
   const response = await fetch(`${API_BASE}${path}`, {

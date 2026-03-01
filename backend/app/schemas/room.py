@@ -26,3 +26,4 @@ class RoomResponse(BaseModel):
 
     id: uuid.UUID
     name: str
+    created_by: uuid.UUID | None

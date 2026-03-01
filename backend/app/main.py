@@ -13,7 +13,7 @@ from sqlalchemy import text
 
 from app.config import settings
 from app.database import engine
-from app.routers import games, players, rooms, weapons
+from app.routers import auth, games, players, rooms, weapons
 
 
 @asynccontextmanager
@@ -58,6 +58,7 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 # Routers
 # ---------------------------------------------------------------------------
+app.include_router(auth.router)
 app.include_router(games.router)
 app.include_router(players.router)
 app.include_router(rooms.router)

@@ -31,6 +31,7 @@ class RoomInfo(BaseModel):
 
     id: uuid.UUID
     name: str
+    created_by: uuid.UUID | None
 
 
 class WeaponInfo(BaseModel):
@@ -40,6 +41,7 @@ class WeaponInfo(BaseModel):
 
     id: uuid.UUID
     name: str
+    created_by: uuid.UUID | None
 
 
 class PlayerInfo(BaseModel):
