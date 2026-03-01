@@ -2,9 +2,14 @@
 
 Party games website for playing with friends at Airbnb stays. See [CLAUDE.md](CLAUDE.md) for game rules and details.
 
+## Tech Stack
+
+- **Backend:** FastAPI, SQLAlchemy 2 (async), SQLite, Alembic, Uvicorn
+- **Frontend:** React 19, TypeScript, React Router v7, Tailwind CSS, Vite 7
+
 ## Prerequisites
 
-- Python 3.11+
+- Python 3.12+
 - Node.js 18+
 - npm
 

@@ -4,7 +4,41 @@ A website for playing party games with friends during Airbnb stays.
 
 ## Tech Stack
 
-TBD
+### Backend
+- **Framework:** FastAPI (Python 3.12)
+- **Database:** SQLite (async via aiosqlite + SQLAlchemy 2.x)
+- **Migrations:** Alembic
+- **Config:** pydantic-settings + python-dotenv
+- **Server:** Uvicorn (port 8000)
+
+### Frontend
+- **Framework:** React 19 + TypeScript
+- **Routing:** React Router v7
+- **Styling:** Tailwind CSS 3
+- **Build Tool:** Vite 7
+
+### Project Structure
+```
+backend/
+  app/
+    models/       # SQLAlchemy models (game, player, assignment, room, weapon)
+    routers/      # API endpoints (games, players, rooms, weapons)
+    schemas/      # Pydantic request/response schemas
+    services/     # Business logic (assignment, death, game services)
+    utils/        # Helpers (join code generation)
+    database.py   # Async engine & session setup
+    config.py     # Settings via pydantic-settings
+    main.py       # FastAPI app entry point
+  alembic/        # DB migrations
+frontend/
+  src/
+    pages/        # HomePage, LobbyPage, GamePage, DeadPage, GameOverPage
+    components/   # UI components (PlayerList, Leaderboard, AssignmentCard, etc.)
+    api/          # API client & endpoint wrappers
+    hooks/        # Custom hooks (usePolling)
+    types/        # TypeScript type definitions
+    utils/        # Helpers (local storage)
+```
 
 ## Games
 
