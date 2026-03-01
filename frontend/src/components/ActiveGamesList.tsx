@@ -34,14 +34,11 @@ const statusConfig: Record<GameStatus, { label: string; classes: string }> = {
 export default function ActiveGamesList() {
   const navigate = useNavigate();
   const [games, setGames] = useState<ResolvedGame[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => getAllGameSessions().length > 0);
 
   useEffect(() => {
     const sessions = getAllGameSessions();
-    if (sessions.length === 0) {
-      setLoading(false);
-      return;
-    }
+    if (sessions.length === 0) return;
 
     let cancelled = false;
 

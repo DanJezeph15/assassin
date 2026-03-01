@@ -65,8 +65,7 @@ async def process_death(db: AsyncSession, victim: Player) -> dict:
 
     # 5. Find the victim's active assignment (who the victim was supposed to kill).
     victim_assignment_result = await db.execute(
-        select(Assignment)
-        .where(
+        select(Assignment).where(
             Assignment.game_id == victim.game_id,
             Assignment.killer_id == victim.id,
             Assignment.is_active == True,  # noqa: E712
@@ -110,9 +109,7 @@ async def process_death(db: AsyncSession, victim: Player) -> dict:
 
     if game_over:
         # Set game status to FINISHED.
-        game_result = await db.execute(
-            select(Game).where(Game.id == victim.game_id)
-        )
+        game_result = await db.execute(select(Game).where(Game.id == victim.game_id))
         game = game_result.scalar_one()
         game.status = GameStatus.FINISHED
 

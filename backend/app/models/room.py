@@ -35,9 +35,7 @@ class Room(Base):
     )
 
     # Indexes ------------------------------------------------------------------
-    __table_args__ = (
-        Index("ix_rooms_game_id", "game_id"),
-    )
+    __table_args__ = (Index("ix_rooms_game_id", "game_id"),)
 
     def __repr__(self) -> str:
         return f"<Room name={self.name!r}>"

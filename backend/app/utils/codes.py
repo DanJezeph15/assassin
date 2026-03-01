@@ -13,10 +13,7 @@ from app.models.game import Game
 
 # Characters used in game codes: uppercase letters + digits, excluding
 # ambiguous characters (0/O, 1/I/L) for readability.
-_ALPHABET = "".join(
-    c for c in string.ascii_uppercase + string.digits
-    if c not in "OIL01"
-)
+_ALPHABET = "".join(c for c in string.ascii_uppercase + string.digits if c not in "OIL01")
 _CODE_LENGTH = 6
 _MAX_RETRIES = 10
 
@@ -34,12 +31,8 @@ async def generate_game_code(db: AsyncSession) -> str:
     for _ in range(_MAX_RETRIES):
         code = "".join(secrets.choice(_ALPHABET) for _ in range(_CODE_LENGTH))
 
-        result = await db.execute(
-            select(Game.id).where(Game.code == code)
-        )
+        result = await db.execute(select(Game.id).where(Game.code == code))
         if result.scalar_one_or_none() is None:
             return code
 
-    raise RuntimeError(
-        f"Failed to generate a unique game code after {_MAX_RETRIES} attempts"
-    )
+    raise RuntimeError(f"Failed to generate a unique game code after {_MAX_RETRIES} attempts")

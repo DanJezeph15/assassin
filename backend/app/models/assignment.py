@@ -83,4 +83,6 @@ class Assignment(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<Assignment killer={self.killer_id} target={self.target_id} active={self.is_active}>"
+        return (
+            f"<Assignment killer={self.killer_id} target={self.target_id} active={self.is_active}>"
+        )

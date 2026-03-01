@@ -25,9 +25,7 @@ async def get_current_player(
     Looks up the player by their unique token. Raises 401 if the token is
     missing or does not match any player.
     """
-    result = await db.execute(
-        select(Player).where(Player.token == x_player_token)
-    )
+    result = await db.execute(select(Player).where(Player.token == x_player_token))
     player = result.scalar_one_or_none()
 
     if player is None:

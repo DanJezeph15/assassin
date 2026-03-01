@@ -35,9 +35,7 @@ class Weapon(Base):
     )
 
     # Indexes ------------------------------------------------------------------
-    __table_args__ = (
-        Index("ix_weapons_game_id", "game_id"),
-    )
+    __table_args__ = (Index("ix_weapons_game_id", "game_id"),)
 
     def __repr__(self) -> str:
         return f"<Weapon name={self.name!r}>"

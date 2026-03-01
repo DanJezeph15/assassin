@@ -85,9 +85,7 @@ class Game(Base):
     )
 
     # Indexes ------------------------------------------------------------------
-    __table_args__ = (
-        Index("ix_games_code", "code", unique=True),
-    )
+    __table_args__ = (Index("ix_games_code", "code", unique=True),)
 
     def __repr__(self) -> str:
         return f"<Game code={self.code!r} status={self.status.value!r}>"

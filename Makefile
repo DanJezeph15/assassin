@@ -1,4 +1,4 @@
-.PHONY: help setup setup-backend setup-frontend dev dev-backend dev-frontend test lint build reset-db clean
+.PHONY: help setup setup-backend setup-frontend dev dev-backend dev-frontend test format lint build reset-db clean
 
 VENV := .venv
 PIP := $(VENV)/bin/pip
@@ -42,7 +42,13 @@ dev-frontend: ## Start frontend dev server (port 5173)
 test: ## Run backend tests
 	cd backend && ../$(PYTHON) -m pytest -v
 
-lint: ## Run frontend linter
+format: ## Auto-format backend code
+	$(VENV)/bin/ruff check --fix backend/
+	$(VENV)/bin/ruff format backend/
+
+lint: ## Check backend and frontend linting
+	$(VENV)/bin/ruff check backend/
+	$(VENV)/bin/ruff format --check backend/
 	cd frontend && npm run lint
 
 # ─── Build ────────────────────────────────────────────────────────────────────

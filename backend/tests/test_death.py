@@ -44,9 +44,7 @@ async def add_players(client: AsyncClient, code: str, names: list[str]) -> list[
     return tokens
 
 
-async def add_rooms(
-    client: AsyncClient, code: str, token: str, names: list[str]
-) -> None:
+async def add_rooms(client: AsyncClient, code: str, token: str, names: list[str]) -> None:
     """Add multiple rooms to a game."""
     for name in names:
         await client.post(
@@ -56,9 +54,7 @@ async def add_rooms(
         )
 
 
-async def add_weapons(
-    client: AsyncClient, code: str, token: str, names: list[str]
-) -> None:
+async def add_weapons(client: AsyncClient, code: str, token: str, names: list[str]) -> None:
     """Add multiple weapons to a game."""
     for name in names:
         await client.post(
@@ -124,9 +120,7 @@ async def get_assignment_map(
     return assignments
 
 
-def verify_chain_circularity(
-    assignments: dict[str, dict], expected_names: list[str]
-) -> None:
+def verify_chain_circularity(assignments: dict[str, dict], expected_names: list[str]) -> None:
     """Verify that the assignment map forms a valid circular chain.
 
     Walks the chain from the first expected name, verifying we visit all
@@ -152,9 +146,7 @@ def verify_chain_circularity(
     )
 
 
-async def confirm_death(
-    client: AsyncClient, code: str, victim_token: str
-) -> dict:
+async def confirm_death(client: AsyncClient, code: str, victim_token: str) -> dict:
     """Have a player confirm their death. Returns the response JSON."""
     resp = await client.post(
         f"/api/games/{code}/deaths",
@@ -313,9 +305,7 @@ async def test_chain_intact_after_one_death_3_players(client: AsyncClient):
     alive_names = [n for n in names if n != victim_name]
     alive_tokens = [t for n, t in zip(names, tokens) if n != victim_name]
 
-    surviving_assignments = await get_assignment_map(
-        client, code, alive_names, alive_tokens
-    )
+    surviving_assignments = await get_assignment_map(client, code, alive_names, alive_tokens)
 
     verify_chain_circularity(surviving_assignments, alive_names)
 
@@ -337,9 +327,7 @@ async def test_chain_intact_after_one_death_5_players(client: AsyncClient):
     alive_names = [n for n in names if n != victim_name]
     alive_tokens = [t for n, t in zip(names, tokens) if n != victim_name]
 
-    surviving_assignments = await get_assignment_map(
-        client, code, alive_names, alive_tokens
-    )
+    surviving_assignments = await get_assignment_map(client, code, alive_names, alive_tokens)
 
     verify_chain_circularity(surviving_assignments, alive_names)
 
@@ -360,9 +348,7 @@ async def test_full_game_3_players(client: AsyncClient):
     alive = list(names)
 
     # Death 1: follow the chain -- find who the first player targets, kill them.
-    assignments = await get_assignment_map(
-        client, code, alive, [name_to_token[n] for n in alive]
-    )
+    assignments = await get_assignment_map(client, code, alive, [name_to_token[n] for n in alive])
     victim1 = assignments[alive[0]]["target_name"]
     death1 = await confirm_death(client, code, name_to_token[victim1])
 
@@ -371,9 +357,7 @@ async def test_full_game_3_players(client: AsyncClient):
     alive.remove(victim1)
 
     # Verify chain still intact.
-    assignments = await get_assignment_map(
-        client, code, alive, [name_to_token[n] for n in alive]
-    )
+    assignments = await get_assignment_map(client, code, alive, [name_to_token[n] for n in alive])
     verify_chain_circularity(assignments, alive)
 
     # Death 2: kill the remaining target.
@@ -494,9 +478,7 @@ async def test_game_over_exactly_when_one_remains(client: AsyncClient):
     alive = list(names)
 
     # Death 1: 3 -> 2 alive. NOT game over.
-    assignments = await get_assignment_map(
-        client, code, alive, [name_to_token[n] for n in alive]
-    )
+    assignments = await get_assignment_map(client, code, alive, [name_to_token[n] for n in alive])
     victim1 = assignments[alive[0]]["target_name"]
     result1 = await confirm_death(client, code, name_to_token[victim1])
     assert result1["game_over"] is False
@@ -506,9 +488,7 @@ async def test_game_over_exactly_when_one_remains(client: AsyncClient):
     assert game_resp.json()["status"] == "in_progress"
 
     # Death 2: 2 -> 1 alive. Game over.
-    assignments = await get_assignment_map(
-        client, code, alive, [name_to_token[n] for n in alive]
-    )
+    assignments = await get_assignment_map(client, code, alive, [name_to_token[n] for n in alive])
     victim2 = assignments[alive[0]]["target_name"]
     result2 = await confirm_death(client, code, name_to_token[victim2])
     assert result2["game_over"] is True
@@ -535,9 +515,7 @@ async def test_leaderboard_sorted_by_kills_desc(client: AsyncClient):
     alive = list(names)
 
     # Kill one player so someone has kills > 0.
-    assignments = await get_assignment_map(
-        client, code, alive, [name_to_token[n] for n in alive]
-    )
+    assignments = await get_assignment_map(client, code, alive, [name_to_token[n] for n in alive])
     killer_name = alive[0]
     victim = assignments[killer_name]["target_name"]
     await confirm_death(client, code, name_to_token[victim])
@@ -573,9 +551,7 @@ async def test_leaderboard_includes_dead_players(client: AsyncClient):
     name_to_token = dict(zip(names, tokens))
     alive = list(names)
 
-    assignments = await get_assignment_map(
-        client, code, alive, [name_to_token[n] for n in alive]
-    )
+    assignments = await get_assignment_map(client, code, alive, [name_to_token[n] for n in alive])
     victim = assignments[alive[0]]["target_name"]
     await confirm_death(client, code, name_to_token[victim])
 
@@ -640,8 +616,7 @@ async def test_leaderboard_after_full_game(client: AsyncClient):
 
     for entry in leaderboard:
         assert entry["kills"] == expected_kills[entry["name"]], (
-            f"{entry['name']}: expected {expected_kills[entry['name']]} kills, "
-            f"got {entry['kills']}"
+            f"{entry['name']}: expected {expected_kills[entry['name']]} kills, got {entry['kills']}"
         )
 
 
@@ -666,9 +641,7 @@ async def test_leaderboard_requires_auth(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_leaderboard_wrong_game_returns_403(client: AsyncClient):
     """A player from another game cannot access the leaderboard."""
-    code_a, tokens_a = await setup_startable_game(
-        client, player_names=["Alice", "Bob", "Charlie"]
-    )
+    code_a, tokens_a = await setup_startable_game(client, player_names=["Alice", "Bob", "Charlie"])
 
     _, token_b = await create_game_and_join(client, "Dave")
 
@@ -693,9 +666,7 @@ async def test_dead_player_cannot_die_again(client: AsyncClient):
 
     name_to_token = dict(zip(names, tokens))
 
-    assignments = await get_assignment_map(
-        client, code, names, [name_to_token[n] for n in names]
-    )
+    assignments = await get_assignment_map(client, code, names, [name_to_token[n] for n in names])
     victim = assignments["Alice"]["target_name"]
     victim_token = name_to_token[victim]
 
@@ -758,9 +729,7 @@ async def test_cannot_die_after_game_finished(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_player_from_different_game_cannot_die(client: AsyncClient):
     """A player from game B cannot confirm death in game A (403)."""
-    code_a, tokens_a = await setup_startable_game(
-        client, player_names=["Alice", "Bob", "Charlie"]
-    )
+    code_a, tokens_a = await setup_startable_game(client, player_names=["Alice", "Bob", "Charlie"])
     await start_game(client, code_a, tokens_a[0])
 
     _, token_b = await create_game_and_join(client, "Dave")
@@ -850,9 +819,7 @@ async def test_inheritance_detailed_deactivation(client: AsyncClient):
             headers={"X-Player-Token": name_to_token[name]},
         )
         assert resp.status_code == 200
-        assert resp.json() == assignments_before[name], (
-            f"{name}'s assignment changed unexpectedly"
-        )
+        assert resp.json() == assignments_before[name], f"{name}'s assignment changed unexpectedly"
 
 
 @pytest.mark.asyncio
@@ -871,9 +838,7 @@ async def test_sequential_kills_by_same_player(client: AsyncClient):
     alive = list(names)
 
     # Kill 1: Alice's target dies.
-    assignments = await get_assignment_map(
-        client, code, alive, [name_to_token[n] for n in alive]
-    )
+    assignments = await get_assignment_map(client, code, alive, [name_to_token[n] for n in alive])
     victim1 = assignments["Alice"]["target_name"]
     result1 = await confirm_death(client, code, name_to_token[victim1])
     assert result1["killer_name"] == "Alice"
@@ -881,9 +846,7 @@ async def test_sequential_kills_by_same_player(client: AsyncClient):
     alive.remove(victim1)
 
     # Kill 2: Alice's NEW target dies (inherited from victim1).
-    assignments = await get_assignment_map(
-        client, code, alive, [name_to_token[n] for n in alive]
-    )
+    assignments = await get_assignment_map(client, code, alive, [name_to_token[n] for n in alive])
     victim2 = assignments["Alice"]["target_name"]
     result2 = await confirm_death(client, code, name_to_token[victim2])
     assert result2["killer_name"] == "Alice"

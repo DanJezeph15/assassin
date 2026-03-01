@@ -42,9 +42,7 @@ async def add_players(client: AsyncClient, code: str, names: list[str]) -> list[
     return tokens
 
 
-async def add_rooms(
-    client: AsyncClient, code: str, token: str, names: list[str]
-) -> None:
+async def add_rooms(client: AsyncClient, code: str, token: str, names: list[str]) -> None:
     """Add multiple rooms to a game."""
     for name in names:
         await client.post(
@@ -54,9 +52,7 @@ async def add_rooms(
         )
 
 
-async def add_weapons(
-    client: AsyncClient, code: str, token: str, names: list[str]
-) -> None:
+async def add_weapons(client: AsyncClient, code: str, token: str, names: list[str]) -> None:
     """Add multiple weapons to a game."""
     for name in names:
         await client.post(
@@ -406,9 +402,7 @@ async def test_assignments_use_valid_rooms_and_weapons(client: AsyncClient):
             headers={"X-Player-Token": tokens[i]},
         )
         data = resp.json()
-        assert data["room_name"] in room_names, (
-            f"{name}'s room '{data['room_name']}' not in pool"
-        )
+        assert data["room_name"] in room_names, f"{name}'s room '{data['room_name']}' not in pool"
         assert data["weapon_name"] in weapon_names, (
             f"{name}'s weapon '{data['weapon_name']}' not in pool"
         )
@@ -430,9 +424,7 @@ async def test_no_player_targets_themselves(client: AsyncClient):
             f"/api/games/{code}/assignment",
             headers={"X-Player-Token": tokens[i]},
         )
-        assert resp.json()["target_name"] != name, (
-            f"{name} is assigned to kill themselves"
-        )
+        assert resp.json()["target_name"] != name, f"{name} is assigned to kill themselves"
 
 
 # ---------------------------------------------------------------------------
@@ -478,9 +470,7 @@ async def test_each_player_sees_only_their_own_assignment(client: AsyncClient):
     # Each player should have a unique target (in a circular chain,
     # every player is someone's target exactly once).
     targets = [a["target_name"] for a in assignments.values()]
-    assert len(set(targets)) == len(targets), (
-        f"Duplicate targets found: {targets}"
-    )
+    assert len(set(targets)) == len(targets), f"Duplicate targets found: {targets}"
 
 
 @pytest.mark.asyncio

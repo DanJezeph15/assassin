@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
@@ -19,8 +19,8 @@ export default function GameOverPage() {
   const token = getPlayerToken(gameCode);
   const playerInfo = getPlayerInfo(gameCode);
 
-  // Navigating flag -- disables polling once a redirect is triggered
-  const [navigating, setNavigating] = useState(false);
+  // Navigating flag -- prevents duplicate redirects
+  const navigatingRef = useRef(false);
 
   // Redirect to home if no token
   useEffect(() => {
@@ -36,9 +36,8 @@ export default function GameOverPage() {
   const [gameErrorStatus, setGameErrorStatus] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!gameCode || !token || navigating) return;
+    if (!gameCode || !token || navigatingRef.current) return;
     let cancelled = false;
-    setGameLoading(true);
     getGame(gameCode)
       .then((data) => {
         if (!cancelled) { setGame(data); setGameError(null); setGameErrorStatus(null); }
@@ -53,7 +52,7 @@ export default function GameOverPage() {
         if (!cancelled) setGameLoading(false);
       });
     return () => { cancelled = true; };
-  }, [gameCode, token, navigating]);
+  }, [gameCode, token]);
 
   // Find current player
   const currentPlayer = useMemo(() => {
@@ -85,13 +84,13 @@ export default function GameOverPage() {
 
   // Redirect based on game status (handles browser refresh)
   useEffect(() => {
-    if (!game || !currentPlayer) return;
+    if (!game || !currentPlayer || navigatingRef.current) return;
 
     if (game.status === "lobby") {
-      setNavigating(true);
+      navigatingRef.current = true;
       navigate(`/game/${gameCode}`, { replace: true });
     } else if (game.status === "in_progress") {
-      setNavigating(true);
+      navigatingRef.current = true;
       if (currentPlayer.is_alive) {
         navigate(`/game/${gameCode}/play`, { replace: true });
       } else {

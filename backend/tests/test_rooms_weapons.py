@@ -255,9 +255,7 @@ async def test_remove_room_from_different_game(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_cannot_remove_room_when_not_in_lobby(
-    client: AsyncClient, db: AsyncSession
-):
+async def test_cannot_remove_room_when_not_in_lobby(client: AsyncClient, db: AsyncSession):
     """Removing a room from a game not in LOBBY status returns 400."""
     from app.models.game import Game, GameStatus
     from app.models.player import Player
@@ -391,9 +389,7 @@ async def test_duplicate_weapon_name_case_insensitive(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_cannot_add_weapon_when_not_in_lobby(
-    client: AsyncClient, db: AsyncSession
-):
+async def test_cannot_add_weapon_when_not_in_lobby(client: AsyncClient, db: AsyncSession):
     """Adding a weapon to a game not in LOBBY status returns 400."""
     from app.models.game import Game, GameStatus
     from app.models.player import Player
@@ -518,9 +514,7 @@ async def test_remove_weapon_from_different_game(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_cannot_remove_weapon_when_not_in_lobby(
-    client: AsyncClient, db: AsyncSession
-):
+async def test_cannot_remove_weapon_when_not_in_lobby(client: AsyncClient, db: AsyncSession):
     """Removing a weapon from a game not in LOBBY status returns 400."""
     from app.models.game import Game, GameStatus
     from app.models.player import Player

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Button from "../components/ui/Button";
 import Spinner from "../components/ui/Spinner";
@@ -17,8 +17,8 @@ export default function DeadPage() {
   const token = getPlayerToken(gameCode);
   const playerInfo = getPlayerInfo(gameCode);
 
-  // Navigating flag -- disables polling once a redirect is triggered
-  const [navigating, setNavigating] = useState(false);
+  // Navigating flag -- prevents duplicate redirects
+  const navigatingRef = useRef(false);
 
   // Redirect to home if no token
   useEffect(() => {
@@ -38,7 +38,7 @@ export default function DeadPage() {
     error: gameError,
     errorStatus: gameErrorStatus,
     refetch,
-  } = usePolling(fetchGameState, 10000, !!gameCode && !!token && !navigating);
+  } = usePolling(fetchGameState, 10000, !!gameCode && !!token);
 
   // Find current player in game data
   const currentPlayer = useMemo(() => {
@@ -65,17 +65,17 @@ export default function DeadPage() {
 
   // Redirect based on game status and player alive status (handles browser refresh)
   useEffect(() => {
-    if (!game || !currentPlayer) return;
+    if (!game || !currentPlayer || navigatingRef.current) return;
 
     if (game.status === "lobby") {
-      setNavigating(true);
+      navigatingRef.current = true;
       navigate(`/game/${gameCode}`, { replace: true });
     } else if (game.status === "finished") {
-      setNavigating(true);
+      navigatingRef.current = true;
       navigate(`/game/${gameCode}/over`, { replace: true });
     } else if (currentPlayer.is_alive) {
       // Player is alive but on the dead page -- redirect to game
-      setNavigating(true);
+      navigatingRef.current = true;
       navigate(`/game/${gameCode}/play`, { replace: true });
     }
   }, [game, currentPlayer, gameCode, navigate]);
