@@ -1,11 +1,18 @@
 """Weapon ORM model."""
 
+from __future__ import annotations
+
 import uuid
+from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
+
+if TYPE_CHECKING:
+    from app.models.assignment import Assignment
+    from app.models.game import Game
 
 
 class Weapon(Base):
@@ -25,11 +32,11 @@ class Weapon(Base):
     )
 
     # Relationships ------------------------------------------------------------
-    game: Mapped["Game"] = relationship(  # noqa: F821
+    game: Mapped["Game"] = relationship(
         "Game",
         back_populates="weapons",
     )
-    assignments: Mapped[list["Assignment"]] = relationship(  # noqa: F821
+    assignments: Mapped[list["Assignment"]] = relationship(
         "Assignment",
         back_populates="weapon",
     )

@@ -1,13 +1,22 @@
 """Game ORM model."""
 
+from __future__ import annotations
+
 import enum
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Index, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
+
+if TYPE_CHECKING:
+    from app.models.assignment import Assignment
+    from app.models.player import Player
+    from app.models.room import Room
+    from app.models.weapon import Weapon
 
 
 class GameStatus(str, enum.Enum):
@@ -57,28 +66,28 @@ class Game(Base):
 
     # Relationships ------------------------------------------------------------
     # The host player (nullable until the first player joins).
-    host: Mapped["Player | None"] = relationship(  # noqa: F821
+    host: Mapped["Player | None"] = relationship(
         "Player",
         foreign_keys=[host_id],
         lazy="selectin",
     )
-    players: Mapped[list["Player"]] = relationship(  # noqa: F821
+    players: Mapped[list["Player"]] = relationship(
         "Player",
         back_populates="game",
         foreign_keys="Player.game_id",
         lazy="selectin",
     )
-    rooms: Mapped[list["Room"]] = relationship(  # noqa: F821
+    rooms: Mapped[list["Room"]] = relationship(
         "Room",
         back_populates="game",
         lazy="selectin",
     )
-    weapons: Mapped[list["Weapon"]] = relationship(  # noqa: F821
+    weapons: Mapped[list["Weapon"]] = relationship(
         "Weapon",
         back_populates="game",
         lazy="selectin",
     )
-    assignments: Mapped[list["Assignment"]] = relationship(  # noqa: F821
+    assignments: Mapped[list["Assignment"]] = relationship(
         "Assignment",
         back_populates="game",
         lazy="selectin",

@@ -42,13 +42,15 @@ dev-frontend: ## Start frontend dev server (port 5173)
 test: ## Run backend tests
 	cd backend && ../$(PYTHON) -m pytest -v
 
-format: ## Auto-format backend code
+format: ## Auto-format and type-check backend code
 	$(VENV)/bin/ruff check --fix backend/
 	$(VENV)/bin/ruff format backend/
+	cd backend && ../$(VENV)/bin/ty check
 
 lint: ## Check backend and frontend linting
 	$(VENV)/bin/ruff check backend/
 	$(VENV)/bin/ruff format --check backend/
+	cd backend && ../$(VENV)/bin/ty check
 	cd frontend && npm run lint
 
 # ─── Build ────────────────────────────────────────────────────────────────────
