@@ -6,7 +6,9 @@ import Input from "./ui/Input";
 import Button from "./ui/Button";
 
 interface EditableItemListProps {
-  items: { id: string; name: string }[];
+  items: { id: string; name: string; created_by: string | null }[];
+  currentPlayerId: string;
+  hostId: string;
   label: string;
   singularLabel: string;
   emptyMessage: string;
@@ -18,6 +20,8 @@ interface EditableItemListProps {
 
 export default function EditableItemList({
   items,
+  currentPlayerId,
+  hostId,
   label,
   singularLabel,
   emptyMessage,
@@ -98,33 +102,35 @@ export default function EditableItemList({
                   {item.name}
                 </span>
               </div>
-              <button
-                onClick={() => handleRemove(item.id)}
-                disabled={removingId === item.id}
-                className={
-                  "flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg " +
-                  "text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 " +
-                  "hover:bg-red-50 dark:hover:bg-red-900/20 " +
-                  "transition-all duration-150 " +
-                  "focus:outline-none focus:ring-2 focus:ring-red-300 dark:focus:ring-red-500/40 focus:ring-offset-1 dark:focus:ring-offset-gray-800 " +
-                  "disabled:opacity-50 disabled:cursor-not-allowed"
-                }
-                aria-label={`Remove ${item.name}`}
-              >
-                {removingId === item.id ? (
-                  <Spinner className="w-4 h-4" />
-                ) : (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    className="w-4 h-4"
-                    aria-hidden="true"
-                  >
-                    <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-                  </svg>
-                )}
-              </button>
+              {(currentPlayerId === hostId || item.created_by === currentPlayerId) && (
+                <button
+                  onClick={() => handleRemove(item.id)}
+                  disabled={removingId === item.id}
+                  className={
+                    "flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg " +
+                    "text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 " +
+                    "hover:bg-red-50 dark:hover:bg-red-900/20 " +
+                    "transition-all duration-150 " +
+                    "focus:outline-none focus:ring-2 focus:ring-red-300 dark:focus:ring-red-500/40 focus:ring-offset-1 dark:focus:ring-offset-gray-800 " +
+                    "disabled:opacity-50 disabled:cursor-not-allowed"
+                  }
+                  aria-label={`Remove ${item.name}`}
+                >
+                  {removingId === item.id ? (
+                    <Spinner className="w-4 h-4" />
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      className="w-4 h-4"
+                      aria-hidden="true"
+                    >
+                      <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                    </svg>
+                  )}
+                </button>
+              )}
             </li>
           ))}
         </ul>

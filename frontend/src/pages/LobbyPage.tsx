@@ -321,6 +321,8 @@ export default function LobbyPage() {
               rooms={game.rooms}
               gameCode={gameCode}
               token={token}
+              currentPlayerId={playerInfo.id}
+              hostId={game.host_id}
               onMutate={refetch}
             />
           </Card>
@@ -333,6 +335,8 @@ export default function LobbyPage() {
               weapons={game.weapons}
               gameCode={gameCode}
               token={token}
+              currentPlayerId={playerInfo.id}
+              hostId={game.host_id}
               onMutate={refetch}
             />
           </Card>

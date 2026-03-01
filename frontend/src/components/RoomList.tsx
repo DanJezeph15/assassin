@@ -7,6 +7,8 @@ interface RoomListProps {
   rooms: Room[];
   gameCode: string;
   token: string;
+  currentPlayerId: string;
+  hostId: string;
   onMutate: () => void;
 }
 
@@ -30,6 +32,8 @@ export default function RoomList({
   rooms,
   gameCode,
   token,
+  currentPlayerId,
+  hostId,
   onMutate,
 }: RoomListProps) {
   const handleAdd = useCallback(
@@ -51,6 +55,8 @@ export default function RoomList({
   return (
     <EditableItemList
       items={rooms}
+      currentPlayerId={currentPlayerId}
+      hostId={hostId}
       label="Rooms"
       singularLabel="room"
       emptyMessage="No rooms yet. Add rooms from your Airbnb!"

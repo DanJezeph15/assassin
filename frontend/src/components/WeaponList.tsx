@@ -7,6 +7,8 @@ interface WeaponListProps {
   weapons: Weapon[];
   gameCode: string;
   token: string;
+  currentPlayerId: string;
+  hostId: string;
   onMutate: () => void;
 }
 
@@ -30,6 +32,8 @@ export default function WeaponList({
   weapons,
   gameCode,
   token,
+  currentPlayerId,
+  hostId,
   onMutate,
 }: WeaponListProps) {
   const handleAdd = useCallback(
@@ -51,6 +55,8 @@ export default function WeaponList({
   return (
     <EditableItemList
       items={weapons}
+      currentPlayerId={currentPlayerId}
+      hostId={hostId}
       label="Weapons"
       singularLabel="weapon"
       emptyMessage="No weapons yet. Add items from around the house!"
