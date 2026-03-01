@@ -1,6 +1,6 @@
 # Assassin
 
-A real-life elimination game for groups staying at an Airbnb. Think Cluedo but you're actually doing it — each player is secretly assigned a target to "kill" using a specific weapon in a specific room of the house.
+A real-life elimination game for groups going on trips or staying at an Airbnb. Think Cluedo but you're actually doing it — each player is secretly assigned a target to "kill" using a specific weapon in a specific room of the house.
 
 ## How It Works
 
